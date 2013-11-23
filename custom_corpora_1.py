@@ -21,27 +21,11 @@ documents = [(list(problem_cat.words(fileid)), category)
 				for fileid in problem_cat.fileids(category)]
 random.shuffle(documents)
 
-# By a testing vs. training set
-problem_test = CategorizedPlaintextCorpusReader(problem_root, '.*\d\.txt', cat_map=auth_map)
-problem_train = CategorizedPlaintextCorpusReader(problem_root, '.*\D\.txt', cat_map=auth_map)
-
-documents_test = [(list(problem_test.words(fileid)), category) 
-				for category in problem_test.categories() 
-				for fileid in problem_test.fileids(category)]
-documents_train = [(list(problem_train.words(fileid)), category) 
-				for category in problem_train.categories() 
-				for fileid in problem_train.fileids(category)]
-
-print problem_test.fileids(problem_test.categories())
-
-#random.shuffle(documents_test)
-#random.shuffle(documents_train)
-
 
 # Word Frequency featureset
 # Word freq accross corpus
 all_words = nltk.FreqDist(words.lower() for words in problem_cat.words())
-key_words = all_words.keys()[:3000]
+key_words = all_words.keys()[:2000]
 
 
 # Compares whether a word from the keywords is in a document
@@ -52,8 +36,23 @@ def doc_features(doc):
 		features['contains(%s)' % word] = (word in doc_words)
 	return features
 
-train_set = [(doc_features(docs), categories) for (docs, categories) in documents_test]
-test_set = [(doc_features(docs), categories) for (docs, categories) in documents_train]
-#classifier = nltk.NaiveBayesClassifier.train(train_set)
+featureset = [(doc_features(docs), categories) for (docs, categories) in documents]
 
-#print nltk.classify.accuracy(classifier, test_set)
+test_len = len(featureset)/4
+train_len = len(featureset) - len(featureset)/4
+
+train_set, test_set = featureset[:train_len], featureset[test_len:]
+
+
+classifier = nltk.NaiveBayesClassifier.train(train_set)
+print nltk.classify.accuracy(classifier, test_set)
+classifier.show_most_informative_features(10)
+
+
+'''
+test_corp = PlaintextCorpusReader(problem_root, 'a01_t1.txt')
+test_list = [(list(test_corp.words(fileid)), category) 
+				for category in test_corp.categories() 
+				for fileid in test_corp.fileids(category)]
+print classifier.classify(doc_features(test_file))
+'''
