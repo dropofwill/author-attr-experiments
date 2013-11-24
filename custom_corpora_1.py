@@ -38,15 +38,18 @@ def doc_features(doc):
 
 featureset = [(doc_features(docs), categories) for (docs, categories) in documents]
 
-test_len = len(featureset)/4
-train_len = len(featureset) - len(featureset)/4
+#train_set, test_set = featureset[:train_len], featureset[train_len:]
 
-train_set, test_set = featureset[:train_len], featureset[test_len:]
+length = int(len(featureset) * 0.5)
+#print len(featureset[:length])
+#print len(featureset[length:])
 
+train_set, test_set = featureset[:length], featureset[length:]
 
 classifier = nltk.NaiveBayesClassifier.train(train_set)
+
 print nltk.classify.accuracy(classifier, test_set)
-classifier.show_most_informative_features(10)
+#classifier.show_most_informative_features(10)
 
 
 '''
