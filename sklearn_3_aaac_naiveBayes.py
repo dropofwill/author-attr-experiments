@@ -14,9 +14,6 @@ X = CountVectorizer(charset_error='ignore', stop_words='english').fit_transform(
 
 n_samples, n_features = X.shape
 
-#print MultinomialNB().fit(X, y).score(X,y)
-
-
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 print X_train.shape
