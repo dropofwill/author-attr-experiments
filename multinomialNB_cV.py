@@ -28,7 +28,7 @@ X, y = docs.data, docs.target
 X = TfidfVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', sublinear_tf=True, max_df=0.5).fit_transform(X)
 n_samples, n_features = X.shape
 
-
+'''
 # sklearn's grid search
 parameters = { 
 	'alpha': np.logspace(-25,0,25)
@@ -42,33 +42,15 @@ print mnb_gv.best_params_
 print mnb_gv.best_score_
 
 mnb_best_score = mnb_gv.best_score_
-
-
-# Grid Search implementation
 '''
-n_alphas = 10
-n_iter = 10
-cv = Bootstrap(n_samples, n_iter=n_iter)
-train_scores = np.zeros((n_alphas, n_iter))
-test_scores = np.zeros((n_alphas, n_iter))
-alphas = np.logspace(-7,-1,n_alphas)
-print alphas
-
-for i, alpha in enumerate(alphas):
-	for j, (train, test) in enumerate(cv):
-		clf = MultinomialNB(alpha=alpha).fit(X[train], y[train])
-		train_scores[i, j] = clf.score(X[train], y[train])
-		test_scores[i, j] = clf.score(X[test], y[test])
-'''
-
 
 # CV with Bootstrap
-
+'''
 mnb = MultinomialNB(alpha=mnb_best_score)
 #bv = Bootstrap(n_samples, n_iter=100, test_size=0.2, random_state=42)
 boot_scores = cross_val_score(mnb, X, y, cv=bv)
 print mean_sem(boot_scores)
-
+'''
 
 
 # CV with ShuffleSpit
