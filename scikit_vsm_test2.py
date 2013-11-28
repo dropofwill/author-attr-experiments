@@ -8,7 +8,7 @@ documents = ("The sky is blue",
 
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(documents)
-#print tfidf_matrix
+print tfidf_matrix.shape
 
 print cosine_similarity(tfidf_matrix[0:1], tfidf_matrix)
 
