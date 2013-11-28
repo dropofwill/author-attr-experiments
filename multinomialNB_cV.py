@@ -19,13 +19,13 @@ import pylab as pl
 def mean_sem(scores):
 	return ("Mean score: {0:.3f} (+/-{1:.3f})").format(np.mean(scores), sem(scores)) 
 
-
 # Load documents
-docs = datasets.load_files(container_path="../../sklearn_data/problemC/")
+docs = datasets.load_files(container_path="../../sklearn_data/problemH/")
 X, y = docs.data, docs.target
 
 # Select Features via Bag of Words approach without stop words
-X = CountVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', ).fit_transform(X)
+#X = CountVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', ).fit_transform(X)
+X = TfidfVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', sublinear_tf=True, max_df=0.5).fit_transform(X)
 n_samples, n_features = X.shape
 
 
@@ -33,11 +33,9 @@ n_samples, n_features = X.shape
 parameters = { 
 	'alpha': np.logspace(-25,0,25)
 }
-
 	#pprint(parameters)
 
-
-bv = Bootstrap(n_samples, n_iter=25, test_size=0.3, random_state=42)
+bv = Bootstrap(n_samples, n_iter=10, test_size=0.3, random_state=42)
 mnb_gv = GridSearchCV(MultinomialNB(), parameters, cv=bv,)
 mnb_gv.fit(X, y)
 print mnb_gv.best_params_
@@ -67,7 +65,7 @@ for i, alpha in enumerate(alphas):
 # CV with Bootstrap
 
 mnb = MultinomialNB(alpha=mnb_best_score)
-bv = Bootstrap(n_samples, n_iter=100, test_size=0.2, random_state=42)
+#bv = Bootstrap(n_samples, n_iter=100, test_size=0.2, random_state=42)
 boot_scores = cross_val_score(mnb, X, y, cv=bv)
 print mean_sem(boot_scores)
 
