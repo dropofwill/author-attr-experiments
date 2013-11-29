@@ -31,12 +31,12 @@ def test_docs(dir):
 
 	# Select Features via Bag of Words approach without stop words
 	#X = CountVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', ).fit_transform(X)
-	X = TfidfVectorizer(charset_error='ignore', stop_words='english', strip_accents='unicode', sublinear_tf=True, max_df=0.5).fit_transform(X)
+	X = TfidfVectorizer(charset_error='ignore', stop_words='english', analyzer='char', ngram_range=(2,4), strip_accents='unicode', sublinear_tf=True, max_df=0.5).fit_transform(X)
 	n_samples, n_features = X.shape
 
 
 	# sklearn's grid search
-	parameters = { 'alpha': np.logspace(-25,0,25)}
+	parameters = { 'alpha': np.logspace(-100,0,10)}
 
 	bv = Bootstrap(n_samples, n_iter=10, test_size=0.3, random_state=42)
 	mnb_gv = GridSearchCV(MultinomialNB(), parameters, cv=bv,)
@@ -53,6 +53,7 @@ def test_docs(dir):
 
 	rand_baseline.append(baseline)
 	test_results.append([mnb_gv.best_score_])
+	sem_results.append(sem(boot_scores))
 
 
 def graph(base_list, results_list, arange):
@@ -62,28 +63,29 @@ def graph(base_list, results_list, arange):
 	ind = np.arange(N)    # the x locations for the groups
 	width = 0.35       # the width of the bars: can also be len(x) sequence
 
-	p1 = plt.bar(ind, base,   width, color='r')
-	p2 = plt.bar(ind+width, res, width, color='y')
+	p1 = plt.bar(ind+.3, base, width, color='r')
+	p2 = plt.bar(ind+width+.3, res, width, color='y')
 
 	plt.ylabel('Accuracy')
 	plt.title('AAAC Problem Accuracy')
-	plt.xticks(np.arange(0,1,10))
+	plt.yticks(np.arange(0,1,10))
+	plt.xticks(np.arange(0,13,13), ('A','B','C','D','E','F','G','H','I','J','K','L','M'))
 	plt.legend( (p1[0], p2[0]), ('Baseline', 'Algorithm') )
 
 	plt.show()
 
 
-
 rand_baseline = list()
 test_results = list()
+sem_results = list()
 
 #test_docs("problemA")
-
 
 for i in string.uppercase[:13]:
 	test_docs("problem"+i)
 
 graph(rand_baseline,test_results,13)
+
 
 # CV with ShuffleSpit
 '''
@@ -91,7 +93,6 @@ cv = ShuffleSplit(n_samples, n_iter=100, test_size=0.2, random_state=0)
 test_scores = cross_val_score(mnb, X, y, cv=cv)
 print np.mean(test_scores)
 '''
-
 
 # Single run through
 '''
