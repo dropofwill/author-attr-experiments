@@ -1,6 +1,0 @@
-Best score: 0.662 
-Baseline score: 0.200 
-Best parameters set: 
-	vect__max_df: 0.75 
-	vect__max_features: 5000 
-	vect__ngram_range: (2, 3) 

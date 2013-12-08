@@ -51,26 +51,38 @@ def test_docs(dir):
 	boot_scores = cross_val_score(mnb, X, y, cv=bv)
 	print mean_sem(boot_scores)
 
+	improvement = (mnb_gv.best_score_ - baseline) / baseline
+
 	rand_baseline.append(baseline)
 	test_results.append([mnb_gv.best_score_])
+	com_results.append(improvement)
 	sem_results.append(sem(boot_scores))
 
 
-def graph(base_list, results_list, arange):
+def graph(base_list, results_list, com_list, arange):
 	N=arange
 	base=np.array(base_list)
 	res=np.array(results_list)
+	com = np.array(com_list)
 	ind = np.arange(N)    # the x locations for the groups
-	width = 0.35       # the width of the bars: can also be len(x) sequence
+	width = 0.3       # the width of the bars: can also be len(x) sequence
 
-	p1 = plt.bar(ind+.3, base, width, color='r')
-	p2 = plt.bar(ind+width+.3, res, width, color='y')
+	#fig, ax = plt.sublots()
+
+	p1 = plt.bar(ind, base, width, color='r')
+	p2 = plt.bar(ind+0.3, res, width, color='y')
+	p3 = plt.bar(ind+0.6, com, width, color='b')
+
+	plt.rcParams['figure.figsize'] = 10, 7.5
+	plt.rcParams['axes.grid'] = True
+	plt.gray()
 
 	plt.ylabel('Accuracy')
 	plt.title('AAAC Problem Accuracy')
-	plt.yticks(np.arange(0,1,10))
-	plt.xticks(np.arange(0,13,13), ('A','B','C','D','E','F','G','H','I','J','K','L','M'))
-	plt.legend( (p1[0], p2[0]), ('Baseline', 'Algorithm') )
+	plt.yticks(np.arange(0,3,30))
+	plt.xticks(np.arange(0,13,13))
+	#plt.set_xticks(('A','B','C','D','E','F','G','H','I','J','K','L','M'))
+	plt.legend( (p1[0], p2[0], p3[0]), ('Baseline', 'Algorithm', 'Improvement'))
 
 	plt.show()
 
@@ -78,13 +90,36 @@ def graph(base_list, results_list, arange):
 rand_baseline = list()
 test_results = list()
 sem_results = list()
+com_results = list()
 
 #test_docs("problemA")
 
 for i in string.uppercase[:13]:
 	test_docs("problem"+i)
 
-graph(rand_baseline,test_results,13)
+#graph(rand_baseline,test_results,com_results,13)
+
+
+
+
+import os
+import time as tm
+
+sub_dir = "Results/"
+location = "multiDoc" + tm.strftime("%Y%m%d-%H%M%S") + ".txt"
+
+with open(os.path.join(sub_dir, location), 'w') as myFile:
+	myFile.write(str(rand_baseline))
+	myFile.write("\n")
+	myFile.write(str(test_results))
+	myFile.write("\n")
+	myFile.write(str(sem_results))
+	myFile.write("\n")
+	myFile.write(str(com_results))
+
+
+
+
 
 
 # CV with ShuffleSpit
