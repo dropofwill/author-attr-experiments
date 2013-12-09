@@ -1,63 +1,38 @@
-from sklearn import datasets
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import RandomizedPCA
-from itertools import cycle
 import numpy as np
-from sklearn.cross_validation import ShuffleSplit
-import string
-import matplotlib.pyplot as pl
-from mpl_toolkits.mplot3d import Axes3D
 import os
 import time as tm
+
+from sklearn import datasets
 from sklearn.cross_validation import train_test_split
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
+
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
+
+from sklearn.decomposition import RandomizedPCA
 
 
+docs = datasets.load_files(container_path="../../sklearn_data/problemI")
 
-docs = datasets.load_files(container_path="../../sklearn_data/problemG")
 X, y = docs.data, docs.target
 
-X = TfidfVectorizer(decode_error='ignore', stop_words='english', analyzer='char', ngram_range=(2,4), strip_accents='unicode', sublinear_tf=True, max_df=0.5).fit_transform(X)
-n_samples, n_features = X.shape
+baseline = 1/float(len(list(np.unique(y))))
 
-#print y
+# Split the dataset into testing and training sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=2)
 
-pca = RandomizedPCA(n_components=2)
-X_pca = pca.fit_transform(X)
+# define a pipeline combining a text feature extractor/transformer with a classifier
+pipeline = Pipeline([
+    ('vect', CountVectorizer(decode_error='ignore', analyzer='char', ngram_range=(1,2))),
+    ('tfidf', TfidfTransformer()),
+    ('clf', MultinomialNB(alpha=0.0001))
+])
 
-#print X_pca.shape
-
-# colors = ['b', 'w', 'r']
-# markers = ['+', 'o', '^']
-# for i, c, m in zip(np.unique(y), cycle(colors), cycle(markers)):
-#     pl.scatter(X_pca[y == i, 0], X_pca[y == i, 1], c=c, marker=m, label=i, alpha=0.5)
-
-# _ = pl.legend(loc='best')
-
-# pl.show()
-
-
-X_reduced = RandomizedPCA(n_components=3).fit_transform(X)
-
-# fig = pl.figure(1, figsize=(8, 6))
-# ax = Axes3D(fig, elev=-150, azim=110)
-# ax.scatter(X_reduced[:, 0], X_reduced[:, 1], X_reduced[:, 2], c=y, s=100)
-# ax.set_title("A PCA Reduction of High Dimensional Data to 3 Dimensions")
-# ax.set_xlabel("1st")
-# ax.w_xaxis.set_ticklabels([])
-# ax.set_ylabel("2nd")
-# ax.w_yaxis.set_ticklabels([])
-# ax.set_zlabel("3rd")
-# ax.w_zaxis.set_ticklabels([])
-# pl.legend(loc='best')
-
-# pl.show()
-
-
-X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size=0.5, random_state=3)
-
+# features to cross-check
 parameters = {
     #'vect__max_df': (0.5, 0.75, 1),
     #'vect__max_features': (None, 100, 5000),
@@ -72,14 +47,12 @@ parameters = {
 scores = ['precision', 'recall']
 
 sub_dir = "Results/"
-location = "results_pca" + tm.strftime("%Y%m%d-%H%M%S") + ".txt"
-
-mnb = MultinomialNB(alpha=0.001)
+location = "results" + tm.strftime("%Y%m%d-%H%M%S") + ".txt"
 
 with open( os.path.join(sub_dir, location), 'w+') as f:
     for score in scores:
         f.write("%s \n" % score)
-        clf = GridSearchCV(estimator=mnb, param_grid=parameters, scoring=score)
+        clf = GridSearchCV(pipeline, parameters, cv=2, scoring=score, verbose=0)
         clf.fit(X_train, y_train)
         improvement = (clf.best_score_ - baseline) / baseline
 
